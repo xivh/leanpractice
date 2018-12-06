@@ -3,7 +3,8 @@ open classical
 --one way DeMorgan's Law
 lemma DeMorganOne : ∀ P Q : Prop, ¬ (P ∧ Q) → ¬ P ∨ ¬ Q :=
 begin
-assume P Q npq,
+assume P Q : Prop,
+assume npq : ¬ (P ∧ Q),
 change (P ∧ Q) → false at npq,
 have pnp : P ∨ ¬ P := em P,
 have qnq : Q ∨ ¬ Q := em Q,
@@ -11,7 +12,7 @@ cases pnp with p np,
 cases qnq with q nq,
 have pq : P ∧ Q := and.intro p q,
 have f : false := npq pq,
-trivial,
+apply false.elim f,
 right,
 assumption,
 left,
@@ -25,14 +26,14 @@ variables (A B : Prop)
 --defining ∨ when you only have ∧
 example : ∀ P Q : Prop, P ∨ Q ↔ ¬(¬P ∧ ¬Q) :=
 begin
-assume P Q,
+assume P Q : Prop,
 split,
 assume pq : P ∨ Q,
 assume npq : ¬ P ∧ ¬ Q,
 show false,
 from
   begin
-  cases pq,
+  cases pq with p q,
   have np : ¬ P := and.elim_left npq,
   contradiction,
   have nq : ¬ Q := and.elim_right npq,
@@ -61,7 +62,7 @@ trivial,
 end
 
 
---going the other way is easy
+--going the other way is easy (I will use more shortcuts)
 lemma DeMorganTwo : ∀ P Q : Prop, ¬ (P ∨ Q) → ¬ P ∧ ¬ Q :=
 begin
 intros,
@@ -79,7 +80,69 @@ trivial,
 apply and.intro np nq,
 end
 
--- defining ∨ from ∧
+-- defining ∧ from ∨
+example : ∀ P Q : Prop, P ∧ Q ↔ ¬ (¬ P ∨ ¬ Q) :=
+begin
+intros,
+split,
+intros,
+assume b,
+show false,
+from
+  begin
+  have p := and.elim_left a,
+  have q := and.elim_right a,
+  cases b with np nq,
+  trivial,
+  trivial,
+  end,
+intros,
+have DMT := DeMorganTwo (¬ P) (¬ Q),
+have nnpnnq := DMT a,
+have pnp := em P,
+have qnq := em Q,
+cases nnpnnq with nnp nnq,
+change (¬ P) → false at nnp,
+change (¬ Q) → false at nnq,
+cases pnp with p np,
+cases qnq with q nq,
+apply and.intro p q,
+have f := nnq nq,
+trivial,
+have f := nnp np,
+trivial
+end
+
+--proving them again without relying on a proof of DML
+example : ∀ P Q : Prop, P ∨ Q ↔ ¬(¬P ∧ ¬Q) :=
+begin
+intros,
+split,
+intros,
+assume npq,
+show false,
+from
+  begin
+  cases a,
+  have np := and.elim_left npq,
+  trivial,
+  have nq := and.elim_right npq,
+  trivial,
+  end,
+assume nnpnq,
+have pnp : P ∨ ¬ P := em P,
+have qnq : Q ∨ ¬ Q := em Q,
+change (¬ P ∧ ¬ Q) → false at nnpnq,
+cases pnp,
+left,
+assumption,
+cases qnq,
+right,
+assumption,
+have f := nnpnq (and.intro pnp qnq),
+trivial,
+end
+
 example : ∀ P Q : Prop, P ∧ Q ↔ ¬ (¬ P ∨ ¬ Q) :=
 begin
 intros,
