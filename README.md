@@ -1,0 +1,2 @@
+# leanpractice
+Practicing Lean
